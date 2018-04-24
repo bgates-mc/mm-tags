@@ -1,0 +1,22 @@
+{
+  "name": "chrome-script-keybind-extension",
+  "version": "1.0.0",
+  "description": "This extension lets you bind any script to a key that will run on the page once pressed. Primarily built to learn Chrome Extensions.",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SergeofBIBEK/chrome-script-keybind-extension.git"
+  },
+  "author": "SergeofBIBEK",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SergeofBIBEK/chrome-script-keybind-extension/issues"
+  },
+  "homepage": "https://github.com/SergeofBIBEK/chrome-script-keybind-extension#readme",
+  "dependencies": {
+    "vue-material": "^1.0.0-beta-7"
+  }
+}

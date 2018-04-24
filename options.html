@@ -3,13 +3,89 @@
 
 <head>
     <title>Custom Scripts Keybindings</title>
-    <style></style>
+
+    <style>
+        .scriptCard {
+            margin-bottom: 15px;
+            min-width: 500px;
+        }
+    </style>
+
+    <link rel="stylesheet" href="material-font.css">
+    <link rel="stylesheet" href="node_modules/vue-material/dist/vue-material.min.css">
+    <link rel="stylesheet" href="node_modules/vue-material/dist/theme/default.css">
+
+    <script src="vue.js"></script>
+    <script src="node_modules/vue-material/dist/vue-material.min.js"></script>
 </head>
 
 <body>
-    <h1>Custom Scripts:</h1>
-    <div id="customScripts">Loading...</div>
+    <div id="scripts">
+        <md-app md-waterfall md-mode="fixed">
+
+            <md-app-toolbar class="md-primary">
+                <span class="md-title">Custom Scripts</span>
+                <div class="md-toolbar-section-end">
+                    <md-button @click="handleNew" class="md-icon-button">
+                        <md-icon>add</md-icon>
+                    </md-button>
+                    <md-button @click="handleSave" class="md-icon-button">
+                        <md-icon>save</md-icon>
+                    </md-button>
+                </div>
+            </md-app-toolbar>
+
+            <md-app-content class="md-layout">
+
+                <md-empty-state v-if="list.length < 1 && !loading" md-icon="block" md-label="No Scripts" md-description="Click the button below to create a new script">
+                    <md-button class="md-primary md-raised">Create New Script</md-button>
+                </md-empty-state>
+
+                <!-- ... cards ... -->
+                <md-card v-for="(item, index) in list" class="md-elevation-5 scriptCard md-layout-item">
+                    <md-card-header>
+                        <div class="md-title">{{item.keybind.keyName}} {{item.site ? 'on' : ''}} {{item.site}}</div>
+                    </md-card-header>
+                    <!-- ... content ... -->
+                    <md-card-content>
+
+                        <md-field>
+                            <md-icon>keyboard</md-icon>
+                            <label>Trigger</label>
+                            <md-input @keyup.stop.prevent @keypress.prevent.stop @keydown.prevent.stop="handleKeybind($event, index)" type="text" :value="item.keybind.keyName"></md-input>
+                            <span class="md-helper-text">Click here and press the key you want to use.</span>
+                            <md-button @click="handleReset(index)" class="md-icon-button" v-if="item.keybind.keyCode !== -1">
+                                <md-icon>close</md-icon>
+                            </md-button>
+                        </md-field>
+
+                        <md-field md-clearable>
+                            <md-icon>web</md-icon>
+                            <label>Site</label>
+                            <md-input type="text" v-model="item.site"></md-input>
+                            <span class="md-helper-text">This is where this script will be active. Leave blank for all sites. site.example.com</span>
+                        </md-field>
+
+                        <md-field>
+                            <label>Script</label>
+                            <md-textarea v-model="item.script"></md-textarea>
+                            <span class="md-helper-text">This is the JavaScript snippet to run.</span>
+                        </md-field>
+
+                    </md-card-content>
+
+                    <md-card-actions>
+                        <md-button @click="handleDelete(index)" class="md-raised md-accent">Delete</md-button>
+                    </md-card-actions>
+
+                </md-card>
+
+            </md-app-content>
+
+        </md-app>
+    </div>
+
+    <script src="options.js"></script>
 </body>
-<script src="options.js"></script>
 
 </html>
