@@ -1,6 +1,6 @@
 {
   "name": "Custom Scripts Keybinding",
-  "version": "1.0",
+  "version": "1.1",
   "description":
     "This extension lets you bind any script to a key that will run on the page once pressed.",
   "permissions": [
