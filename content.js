@@ -1,5 +1,4 @@
 chrome.storage.sync.get("list", function(data) {
-  console.log(data);
   data.list.forEach(item => {
     let { keybind, site, script } = item;
 
