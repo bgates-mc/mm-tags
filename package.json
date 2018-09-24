@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/SergeofBIBEK/chrome-script-keybind-extension#readme",
   "dependencies": {
-    "vue-material": "^1.0.0-beta-7"
+    "bulma": "^0.7.1"
   }
 }

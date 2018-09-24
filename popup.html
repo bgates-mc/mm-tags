@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MM Tags Extension</title>
+
+    <link rel="stylesheet" href="./node_modules/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="./popup.css">
+
+</head>
+
+<body>
+    <h1 class="title">MM Tags Extension</h1>
+    <dib class="field">
+        <label class="subtitle">Enter your list of urls (comma-separated) to process here:</label>
+        <div class="control">
+            <textarea id="URLsTextarea" class="textarea urls-text-area is-success" rows="10"></textarea>
+        </div>
+    </dib>
+
+    <div class="field is-grouped">
+        <div class="control">
+            <button id="startButton" class="button is-success">START</button>
+        </div>
+        <div class="control">
+            <button id="stopButton" class="button is-danger">STOP</button>
+        </div>
+    </div>
+
+    <script src="./popup.js"></script>
+</body>
+
+</html>

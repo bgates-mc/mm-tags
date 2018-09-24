@@ -1,0 +1,8 @@
+body {
+  padding: 10px;
+}
+
+.urls-text-area {
+  min-width: 500px;
+  margin-bottom: 20px;
+}
