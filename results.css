@@ -3,7 +3,7 @@ body {
 }
 
 #app {
-  overflow: scroll;
+  overflow: auto;
 }
 
 td {

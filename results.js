@@ -74,7 +74,7 @@ function responseReceived(message) {
   responseFor.responses.push({
     body: message.response.body,
     tagId: VersaTagId ? VersaTagId[1] : "???",
-    ruleHits: MappingRules ? VersaTagId[1] : "???",
+    ruleHits: MappingRules ? MappingRules[1] : "???",
     queryString: message.queryString
   });
 }
