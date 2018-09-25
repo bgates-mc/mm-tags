@@ -30,13 +30,16 @@ chrome.runtime.onMessage.addListener(message => {
 
   let originalURLs = URLs.slice();
 
-  chrome.tabs.create({ url: chrome.runtime.getURL("results.html") }, () => {
-    chrome.runtime.sendMessage({ type: "newJobStarted", value: originalURLs });
+  chrome.tabs.create({ url: chrome.runtime.getURL("results.html") }, tab => {
+    chrome.tabs.onUpdated.addListener((updatedId, changes) => {
+      if (changes.status === "complete" && updatedId === tab.id) {
+        chrome.runtime.sendMessage({ type: "newJobStarted", value: originalURLs });
+        while (URLs.length && processingCount < maxTabs) {
+          openTab();
+        }
+      }
+    });
   });
-
-  while (URLs.length && processingCount < maxTabs) {
-    openTab();
-  }
 });
 
 function openTab() {
