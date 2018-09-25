@@ -1,3 +1,11 @@
+var app = new Vue({
+  el: "#app",
+  data: {
+    processing: "Loading...",
+    URLs: []
+  }
+});
+
 chrome.runtime.onMessage.addListener(message => {
   switch (message.type) {
     case "newJobStarted": {
@@ -6,6 +14,10 @@ chrome.runtime.onMessage.addListener(message => {
     }
     case "tabClosed": {
       tabClosed(message);
+      break;
+    }
+    case "tabOpened": {
+      tabOpened(message);
       break;
     }
     case "jobComplete": {
@@ -24,23 +36,45 @@ let processing = false;
 
 function newJobStarted(message) {
   processing = true;
+  app.processing = "Processing";
   URLs = message.value.map(item => {
     let { url, id } = item;
-    return { url, started: false, finished: false, responses: [], id };
+    return { url, started: false, finished: false, responses: [], id, finalURL: "" };
   });
+  app.URLs = URLs;
+}
+
+function tabOpened(message) {
+  URLs[message.id].started = true;
 }
 
 function tabClosed(message) {
-  let finishedURL = URLs.find(url => url.id === message.urlId);
+  let finishedURL = URLs[message.urlId];
+  finishedURL.finalURL = message.finalURL;
   finishedURL.finished = true;
 }
 
 function jobComplete(message) {
   processing = false;
-  console.log("JOB FINISHED BOYZ", URLs);
+  app.processing = "Finished";
 }
 
 function responseReceived(message) {
-  let responseFor = URLs.find(url => url.id === message.urlId);
-  responseFor.responses.push({ body: message.response.body, queryString: message.queryString });
+  let responseFor = URLs[message.urlId];
+  let ruleHits = decodeURIComponent(message.response.body)
+    .split("\n")
+    .find(line => line.indexOf("Rule hits:") > -1);
+
+  let VersaTagIdRegex = /OneTagId:(\d*?),/;
+  let RuleHitRegex = /Rule hits:(.*?),\s/;
+
+  let VersaTagId = VersaTagIdRegex.exec(ruleHits);
+  let MappingRules = RuleHitRegex.exec(ruleHits);
+
+  responseFor.responses.push({
+    body: message.response.body,
+    tagId: VersaTagId ? VersaTagId[1] : "???",
+    ruleHits: MappingRules ? VersaTagId[1] : "???",
+    queryString: message.queryString
+  });
 }

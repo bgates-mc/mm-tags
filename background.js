@@ -18,6 +18,12 @@ chrome.runtime.onMessage.addListener(message => {
     return;
   }
 
+  if (message.maxTabs) {
+    maxTabs = message.maxTabs;
+  } else {
+    maxTabs = 5;
+  }
+
   URLs = message.value.split(",").map((item, index) => {
     return { url: item, id: index };
   });
@@ -38,6 +44,7 @@ function openTab() {
   let { url, id } = item;
   processingCount++;
   chrome.tabs.create({ url, active: false }, tab => {
+    chrome.runtime.sendMessage({ type: "tabOpened", id });
     listenForComplete(url, tab.id, id);
     attachDebugger(url, tab.id, id);
   });
@@ -46,7 +53,7 @@ function openTab() {
 function listenForComplete(url, tabId, urlId) {
   completeListeners[`${tabId}CompleteListener`] = (updatedId, changes, tab) => {
     if (changes.status === "complete" && updatedId === tabId) {
-      chrome.runtime.sendMessage({ type: "tabClosed", url, urlId });
+      chrome.runtime.sendMessage({ type: "tabClosed", url, urlId, finalURL: tab.url });
       chrome.tabs.onUpdated.removeListener(completeListeners[`${tabId}CompleteListener`]);
 
       chrome.tabs.remove(tabId, () => {
@@ -105,11 +112,3 @@ chrome.webRequest.onBeforeRequest.addListener(
   { urls: ["*://bs.serving-sys.com/*"] },
   ["blocking"]
 );
-
-/*
-https://www.landroverroaringfork.com/
- VersaTag ID: 4497
- Mapping rule 170448 activates.
- query string is: cn=ottest&onetagid=4497&dispType=js&sync=0&sessionid=5435238755290978693&pageurl=$$https://www.landroverroaringfork.com/$$&activityValues=$$Session=5696495043623395387$$&acp=$$step=&cpo=$$&ns=0&rnd=9636598558389784&mmdebug=1
- %0A
- */

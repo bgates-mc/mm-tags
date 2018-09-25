@@ -1,2 +1,3 @@
-# chrome-script-keybind-extension
-This extension lets you bind any script to a key that will run on the page once pressed. Primarily built to learn Chrome Extensions.
+# MM TAGS VT TESTING
+
+This extension lets you enter a list of urls and it will check for VTs on them.

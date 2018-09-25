@@ -9,12 +9,51 @@
 
     <link rel="stylesheet" href="./node_modules/bulma/css/bulma.min.css">
     <link rel="stylesheet" href="./results.css">
+    <script src="./vue.min.js"></script>
 </head>
 
 <body>
-    <h1 class="title">MM Tags Results</h1>
+    <h1 class="title">MM Tags VT Results</h1>
 
-    <div id="URLs">Loading...</div>
+    <div id="app">
+        <div class="subtitle">Status:
+            <div :class="{'tag': true, 'is-danger': processing === 'Loading...', 'is-warning': processing === 'Processing', 'is-success': processing === 'Finished'}">
+                {{processing}}
+            </div>
+        </div>
+        <div class="subtitle">Results:</div>
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <th>URL</th>
+                <th>VT ID</th>
+                <th>Mapping Rules</th>
+                <th>Query String</th>
+                <th>Final URL</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                <template v-for="(url, index) in URLs">
+                    <tr>
+                        <td>{{url.url}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{url.finalURL}}</td>
+                        <td :class="{'is-danger': !url.started, 'is-warning': url.started && !url.finished, 'is-success': url.finished}">{{url.started
+                            ? url.finished ? "Complete" : "Processing" : "In Queue"}}</td>
+                    </tr>
+                    <tr v-for="response in url.responses">
+                        <td></td>
+                        <td>{{response.tagId}}</td>
+                        <td>{{response.ruleHits}}</td>
+                        <td>{{response.queryString}}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
 
     <script src="./results.js"></script>
 </body>

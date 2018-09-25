@@ -1,0 +1,12 @@
+body {
+  padding: 10px;
+}
+
+#app {
+  overflow: scroll;
+}
+
+td {
+  max-width: 16.66vw;
+  word-wrap: break-word;
+}

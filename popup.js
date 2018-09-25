@@ -1,9 +1,10 @@
 let URLsTextarea = document.getElementById("URLsTextarea");
+let maxTabs = document.getElementById("maxTabs");
 let startButton = document.getElementById("startButton");
 let stopButton = document.getElementById("stopButton");
 
 startButton.addEventListener("click", event => {
-  chrome.runtime.sendMessage({ type: "startTesting", value: URLsTextarea.value });
+  chrome.runtime.sendMessage({ type: "startTesting", value: URLsTextarea.value, maxTabs: Number(maxTabs.value) });
 });
 
 stopButton.addEventListener("click", event => {
