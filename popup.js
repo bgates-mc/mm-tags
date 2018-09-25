@@ -7,5 +7,14 @@ startButton.addEventListener("click", event => {
 });
 
 stopButton.addEventListener("click", event => {
-  //
+  chrome.runtime.sendMessage({ type: "stopTesting" });
+});
+
+chrome.runtime.getBackgroundPage(processor => {
+  let { processing } = processor;
+  if (processing()) {
+    stopButton.removeAttribute("disabled");
+  } else {
+    startButton.removeAttribute("disabled");
+  }
 });
