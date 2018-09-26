@@ -64,22 +64,24 @@ function formatURL(url) {
 function listenForComplete(url, tabId, urlId) {
   completeListeners[`${tabId}CompleteListener`] = (updatedId, changes, tab) => {
     if (changes.status === "complete" && updatedId === tabId) {
-      chrome.runtime.sendMessage({ type: "tabClosed", url, urlId, finalURL: tab.url });
-      chrome.tabs.onUpdated.removeListener(completeListeners[`${tabId}CompleteListener`]);
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ type: "tabClosed", url, urlId, finalURL: tab.url });
+        chrome.tabs.onUpdated.removeListener(completeListeners[`${tabId}CompleteListener`]);
 
-      chrome.tabs.remove(tabId, () => {
-        processingCount--;
+        chrome.tabs.remove(tabId, () => {
+          processingCount--;
 
-        if (processingCount <= maxTabs && URLs.length) {
-          openTab();
-        } else if (URLs.length === 0 && processingCount === 0) {
-          chrome.runtime.sendMessage({ type: "jobComplete" });
-          Object.keys(debugListeners).forEach(key => {
-            chrome.debugger.onEvent.removeListener(debugListeners[key]);
-          });
-          debugListeners = {};
-        }
-      });
+          if (processingCount <= maxTabs && URLs.length) {
+            openTab();
+          } else if (URLs.length === 0 && processingCount === 0) {
+            chrome.runtime.sendMessage({ type: "jobComplete" });
+            Object.keys(debugListeners).forEach(key => {
+              chrome.debugger.onEvent.removeListener(debugListeners[key]);
+            });
+            debugListeners = {};
+          }
+        });
+      }, 2500);
     }
   };
   chrome.tabs.onUpdated.addListener(completeListeners[`${tabId}CompleteListener`]);
