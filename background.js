@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(message => {
     maxTabs = 5;
   }
 
-  URLs = message.value.split(",").map((item, index) => {
+  URLs = message.value.split("\n").map((item, index) => {
     return { url: item, id: index };
   });
 
@@ -46,11 +46,19 @@ function openTab() {
   let item = URLs.shift();
   let { url, id } = item;
   processingCount++;
-  chrome.tabs.create({ url, active: false }, tab => {
+  chrome.tabs.create({ url: formatURL(url), active: false }, tab => {
     chrome.runtime.sendMessage({ type: "tabOpened", id });
     listenForComplete(url, tab.id, id);
     attachDebugger(url, tab.id, id);
   });
+}
+
+function formatURL(url) {
+  if (url.indexOf("http") !== 0) {
+    url = `http://${url}`;
+  }
+  url = url.replace("*", "");
+  return url;
 }
 
 function listenForComplete(url, tabId, urlId) {
