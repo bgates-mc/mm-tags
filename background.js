@@ -11,7 +11,17 @@ function processing() {
 //Start Button handler - fires when start button is clicked.
 chrome.runtime.onMessage.addListener(message => {
   if (message.type === "stopTesting") {
+    Object.keys(debugListeners).forEach(key => {
+      chrome.debugger.onEvent.removeListener(debugListeners[key]);
+    });
+    debugListeners = {};
+    Object.keys(completeListeners).forEach(key => {
+      chrome.debugger.onEvent.removeListener(completeListeners[key]);
+    });
+    completeListeners = {};
+
     URLs = [];
+    processingCount = 0;
     return;
   }
   if (message.type !== "startTesting") {
@@ -24,9 +34,12 @@ chrome.runtime.onMessage.addListener(message => {
     maxTabs = 5;
   }
 
-  URLs = message.value.split("\n").map((item, index) => {
-    return { url: item, id: index };
-  });
+  URLs = message.value
+    .split("\n")
+    .filter(line => line)
+    .map((item, index) => {
+      return { url: item, id: index };
+    });
 
   let originalURLs = URLs.slice();
 
@@ -114,7 +127,6 @@ function attachDebugger(url, tabId, urlId) {
 }
 
 //----------Request----------
-//http://www.baidu.com,http://www.tudou.com,http://www.tencent.com,https://www.landroverroaringfork.com/
 
 chrome.webRequest.onBeforeRequest.addListener(
   details => {
