@@ -67,10 +67,11 @@ function openTab() {
 }
 
 function formatURL(url) {
+  url = url.trim();
+  url = url.replace("*", "");
   if (url.indexOf("http") !== 0) {
     url = `http://${url}`;
   }
-  url = url.replace("*", "");
   return url;
 }
 
@@ -101,6 +102,8 @@ function listenForComplete(url, tabId, urlId) {
 }
 
 function attachDebugger(url, tabId, urlId) {
+  let firstRequest = true;
+
   chrome.debugger.attach({ tabId }, "1.3", () => {
     chrome.debugger.sendCommand({ tabId }, "Network.enable");
 
@@ -109,7 +112,7 @@ function attachDebugger(url, tabId, urlId) {
         return;
       }
 
-      if (message == "Network.responseReceived" && params.response.url.indexOf("mmdebug=1") > -1) {
+      if (message === "Network.responseReceived" && params.response.url.indexOf("mmdebug=1") > -1) {
         chrome.debugger.sendCommand({ tabId }, "Network.getResponseBody", { requestId: params.requestId }, response => {
           chrome.runtime.sendMessage({
             type: "responseReceived",
@@ -119,6 +122,11 @@ function attachDebugger(url, tabId, urlId) {
             queryString: params.response.url.split("?")[1]
           });
         });
+      }
+
+      if (message === "Network.responseReceived" && firstRequest) {
+        chrome.runtime.sendMessage({ type: "pageStatus", status: params.response.status, urlId });
+        firstRequest = false;
       }
     };
 

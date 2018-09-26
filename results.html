@@ -29,6 +29,7 @@
                 <th>Mapping Rules</th>
                 <th>Query String</th>
                 <th>Final URL</th>
+                <th>Page HTTP Status</th>
                 <th>Status</th>
             </thead>
             <tbody>
@@ -46,6 +47,7 @@
                             <td>{{url.responses[0].queryString}}</td>
                         </template>
                         <td>{{url.finalURL}}</td>
+                        <td>{{url.status}}</td>
                         <td :class="{'is-danger': !url.started, 'is-warning': url.started && !url.finished, 'is-success': url.finished}">{{url.started
                             ? url.finished ? "Complete" : "Processing" : "In Queue"}}</td>
                     </tr>
@@ -54,6 +56,7 @@
                         <td>{{response.tagId}}</td>
                         <td>{{response.ruleHits}}</td>
                         <td>{{response.queryString}}</td>
+                        <td></td>
                         <td></td>
                         <td></td>
                     </tr>

@@ -20,6 +20,10 @@ chrome.runtime.onMessage.addListener(message => {
       tabOpened(message);
       break;
     }
+    case "pageStatus": {
+      pageStatus(message);
+      break;
+    }
     case "jobComplete": {
       jobComplete(message);
       break;
@@ -39,7 +43,7 @@ function newJobStarted(message) {
   app.processing = "Processing";
   URLs = message.value.map(item => {
     let { url, id } = item;
-    return { url, started: false, finished: false, responses: [], id, finalURL: "" };
+    return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "" };
   });
   app.URLs = URLs;
 }
@@ -52,6 +56,10 @@ function tabClosed(message) {
   let finishedURL = URLs[message.urlId];
   finishedURL.finalURL = message.finalURL;
   finishedURL.finished = true;
+}
+
+function pageStatus(message) {
+  URLs[message.urlId].status = message.status;
 }
 
 function jobComplete(message) {
