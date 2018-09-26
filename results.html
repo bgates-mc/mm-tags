@@ -35,14 +35,21 @@
                 <template v-for="(url, index) in URLs">
                     <tr>
                         <td>{{url.url}}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <template v-if="url.responses.length > 1 || url.responses.length === 0">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </template>
+                        <template v-if="url.responses.length === 1">
+                            <td>{{url.responses[0].tagId}}</td>
+                            <td>{{url.responses[0].ruleHits}}</td>
+                            <td>{{url.responses[0].queryString}}</td>
+                        </template>
                         <td>{{url.finalURL}}</td>
                         <td :class="{'is-danger': !url.started, 'is-warning': url.started && !url.finished, 'is-success': url.finished}">{{url.started
                             ? url.finished ? "Complete" : "Processing" : "In Queue"}}</td>
                     </tr>
-                    <tr v-for="response in url.responses">
+                    <tr v-if="url.responses.length > 1" v-for="response in url.responses">
                         <td></td>
                         <td>{{response.tagId}}</td>
                         <td>{{response.ruleHits}}</td>
