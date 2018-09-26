@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(message => {
     });
     debugListeners = {};
     Object.keys(completeListeners).forEach(key => {
-      chrome.debugger.onEvent.removeListener(completeListeners[key]);
+      chrome.tabs.onUpdated.removeListener(completeListeners[key]);
     });
     completeListeners = {};
 
