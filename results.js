@@ -5,6 +5,9 @@ var app = new Vue({
     URLs: []
   },
   methods: {
+    pass(url) {
+      //TODO: did this pass?
+    },
     retry(url) {
       this.URLs.splice(url.id, 1, {
         url: url.url,
@@ -55,8 +58,8 @@ function newJobStarted(message) {
   processing = true;
   app.processing = "Processing";
   app.URLs = message.value.map(item => {
-    let { url, id } = item;
-    return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "" };
+    let { url, id, mappingRule } = item;
+    return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "", mappingRule };
   });
 }
 

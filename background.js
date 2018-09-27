@@ -25,7 +25,9 @@ chrome.runtime.onMessage.addListener(message => {
     return;
   } else if (message.type === "retry") {
     URLs.push(message.url);
-    openTab();
+    if (processingCount < maxTabs) {
+      openTab();
+    }
   }
   if (message.type !== "startTesting") {
     return;
@@ -40,9 +42,12 @@ chrome.runtime.onMessage.addListener(message => {
   URLs = message.value
     .split("\n")
     .filter(line => line)
-    .map((item, index) => {
-      return { url: item, id: index };
-    });
+    .map((item, index, array) => {
+      if (index % 2 === 0) {
+        return { url: item, id: index / 2, mappingRule: array[index + 1] };
+      }
+    })
+    .filter(item => item);
 
   let originalURLs = URLs.slice();
 
@@ -115,7 +120,11 @@ function attachDebugger(url, tabId, urlId) {
         return;
       }
 
-      if (message === "Network.responseReceived" && params.response.url.indexOf("mmdebug=1") > -1) {
+      if (
+        message === "Network.responseReceived" &&
+        params.response.url.indexOf("mmdebug=1") > -1 &&
+        params.response.url.indexOf("cn=ot") > -1
+      ) {
         chrome.debugger.sendCommand({ tabId }, "Network.getResponseBody", { requestId: params.requestId }, response => {
           chrome.runtime.sendMessage({
             type: "responseReceived",
