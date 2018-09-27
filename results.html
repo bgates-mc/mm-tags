@@ -34,7 +34,7 @@
             </thead>
             <tbody>
                 <template v-for="(url, index) in URLs">
-                    <tr>
+                    <tr @click="retry(url)">
                         <td>{{url.url}}</td>
                         <template v-if="url.responses.length > 1 || url.responses.length === 0">
                             <td></td>

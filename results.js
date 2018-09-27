@@ -3,6 +3,20 @@ var app = new Vue({
   data: {
     processing: "Loading...",
     URLs: []
+  },
+  methods: {
+    retry(url) {
+      this.URLs.splice(url.id, 1, {
+        url: url.url,
+        started: false,
+        finished: false,
+        responses: [],
+        id: url.id,
+        finalURL: "",
+        status: ""
+      });
+      chrome.runtime.sendMessage({ type: "retry", url });
+    }
   }
 });
 
@@ -35,31 +49,29 @@ chrome.runtime.onMessage.addListener(message => {
   }
 });
 
-let URLs = [];
 let processing = false;
 
 function newJobStarted(message) {
   processing = true;
   app.processing = "Processing";
-  URLs = message.value.map(item => {
+  app.URLs = message.value.map(item => {
     let { url, id } = item;
     return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "" };
   });
-  app.URLs = URLs;
 }
 
 function tabOpened(message) {
-  URLs[message.id].started = true;
+  app.URLs[message.id].started = true;
 }
 
 function tabClosed(message) {
-  let finishedURL = URLs[message.urlId];
+  let finishedURL = app.URLs[message.urlId];
   finishedURL.finalURL = message.finalURL;
   finishedURL.finished = true;
 }
 
 function pageStatus(message) {
-  URLs[message.urlId].status = message.status;
+  app.URLs[message.urlId].status = message.status;
 }
 
 function jobComplete(message) {
@@ -68,7 +80,7 @@ function jobComplete(message) {
 }
 
 function responseReceived(message) {
-  let responseFor = URLs[message.urlId];
+  let responseFor = app.URLs[message.urlId];
   let ruleHits = decodeURIComponent(message.response.body)
     .split("\n")
     .find(line => line.indexOf("Rule hits:") > -1);

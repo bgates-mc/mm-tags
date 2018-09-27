@@ -23,6 +23,9 @@ chrome.runtime.onMessage.addListener(message => {
     URLs = [];
     processingCount = 0;
     return;
+  } else if (message.type === "retry") {
+    URLs.push(message.url);
+    openTab();
   }
   if (message.type !== "startTesting") {
     return;
