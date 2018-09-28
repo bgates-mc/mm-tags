@@ -2,7 +2,8 @@ var app = new Vue({
   el: "#app",
   data: {
     processing: "Loading...",
-    URLs: []
+    URLs: [],
+    tab: 0
   },
   methods: {
     retry(url) {
@@ -48,6 +49,9 @@ var app = new Vue({
       });
 
       return ruleMatch;
+    },
+    completedCount() {
+      return this.URLs.filter(item => item.finished).length;
     }
   }
 });

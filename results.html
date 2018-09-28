@@ -7,62 +7,98 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>MM Tags Results</title>
 
-    <link rel="stylesheet" href="./node_modules/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="./node_modules/@mdi/font/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="./node_modules/buefy/dist/buefy.min.css">
     <link rel="stylesheet" href="./results.css">
-    <script src="./vue.min.js"></script>
+
+    <script src="./node_modules/vue/dist/vue.min.js"></script>
+    <script src="./node_modules/buefy/dist/buefy.min.js"></script>
 </head>
 
 <body>
-    <h1 class="title">MM Tags VT Results</h1>
+    <h1 class="title">Results Page</h1>
 
     <div id="app">
-        <div class="subtitle">Status:
-            <div :class="{'tag': true, 'is-danger': processing === 'Loading...', 'is-warning': processing === 'Processing', 'is-success': processing === 'Finished'}">
-                {{processing}}
-            </div>
-        </div>
-        <div class="subtitle">Results:</div>
-        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-            <thead>
-                <th>URL</th>
-                <th>VT ID</th>
-                <th>Mapping Rules</th>
-                <th>Query String</th>
-                <th>Final URL</th>
-                <th>Page HTTP Status</th>
-                <th>Status</th>
-            </thead>
-            <tbody>
-                <template v-for="(url, index) in URLs">
-                    <tr @click="retry(url)">
-                        <td>{{url.url}}</td>
-                        <template v-if="url.responses.length > 1 || url.responses.length === 0">
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </template>
-                        <template v-if="url.responses.length === 1">
-                            <td>{{url.responses[0].tagId}}</td>
-                            <td>{{url.responses[0].ruleHits}}</td>
-                            <td>{{url.responses[0].queryString}}</td>
-                        </template>
-                        <td>{{url.finalURL}}</td>
-                        <td>{{url.status}}</td>
-                        <td :class="{'is-danger': !url.started, 'is-warning': url.started && !url.finished, 'is-success': url.finished}">{{url.started
-                            ? url.finished ? "Complete" : "Processing" : "In Queue"}}</td>
-                    </tr>
-                    <tr v-if="url.responses.length > 1" v-for="response in url.responses">
-                        <td></td>
-                        <td>{{response.tagId}}</td>
-                        <td>{{response.ruleHits}}</td>
-                        <td>{{response.queryString}}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+        <div class="subtitle">Progress: {{completedCount()}} of {{URLs.length}} Completed</div>
+        <progress class="progress is-primary" :value="completedCount()" :max="URLs.length">{{(completedCount() / URLs.length).toFixed(2)}}%</progress>
+        <b-tabs type="is-boxed" class="block">
+            <b-tab-item label="Details">
+                <b-table :data="URLs" :striped="true" :narrowed="true" :hoverable="true" :mobile-cards="true" detailed detail-key="id">
+                    <template slot-scope="props">
+                        <b-table-column field="url" label="URL">
+                            <button class="button is-primary" :disabled="!props.row.finished" @click="retry(props.row)">
+                                <b-icon icon="refresh" />
+                            </button>
+                            {{ props.row.url }}
+                        </b-table-column>
+                        <b-table-column field="status" label="Status">
+                            <b-tag :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
+                                {{ props.row.started ? (props.row.finished ? 'Complete' : 'Processing') : 'In Queue' }}
+                            </b-tag>
+                        </b-table-column>
+                    </template>
+
+                    <template slot="detail" slot-scope="props">
+                        <div>
+                            Expected Mapping Rule: {{props.row.mappingRule}}
+                            <b-tag v-if="props.row.finished" :type="isMappingRuleActivated(props.row) ? 'is-success' : 'is-danger'">
+                                {{isMappingRuleActivated(props.row) ? 'Activated' : 'Did not activate'}}
+                            </b-tag>
+                        </div>
+                        <div v-if="props.row.finished">
+                            Final URL: {{props.row.finalURL}}
+                            <b-tag :type="isRedirect(props.row).domain.result ? 'is-danger' : 'is-success'">
+                                Domain {{isRedirect(props.row).domain.result ? 'Does Not Match' : 'Matches'}}
+                            </b-tag>
+                            <b-tag :type="isRedirect(props.row).path.result ? 'is-danger' : 'is-success'">
+                                Path {{isRedirect(props.row).path.result ? 'Does Not Match' : 'Matches'}}
+                            </b-tag>
+                            <b-tag :type="isRedirect(props.row).etc.result ? 'is-warning' : 'is-success'">
+                                Params {{isRedirect(props.row).etc.result ? 'Do Not Match' : 'Match'}}
+                            </b-tag>
+                        </div>
+                        <div v-if="props.row.status">
+                            HTTP Status: {{props.row.status}}
+                            <b-tag v-if="is404(props.row)" type="is-danger">404 detected</b-tag>
+                        </div>
+                        <div>
+                            VersaTags:
+                            <b-tag v-if="isMultipleTags(props.row)" type="is-danger">Multiple Tags Fired</b-tag>
+                        </div>
+                        <b-table :data="props.row.responses" :bordered="true" :striped="true" :narrowed="true" :hoverable="true">
+                            <template slot-scope="responses">
+                                <b-table-column field="tagId" label="VersaTag ID">
+                                    {{responses.row.tagId}}
+                                </b-table-column>
+                                <b-table-column field="ruleHits" label="Mapping Rules">
+                                    {{responses.row.ruleHits}}
+                                </b-table-column>
+                                <b-table-column field="queryString" label="Query String">
+                                    {{responses.row.queryString}}
+                                </b-table-column>
+                            </template>
+
+                            <template slot="empty">
+                                <section class="section">
+                                    <div class="content has-text-red has-text-centered">
+                                        <p>
+                                            <b-icon icon="emoticon-sad" size="is-large" />
+                                        </p>
+                                        <p>No VersaTags Fired</p>
+                                    </div>
+                                </section>
+                            </template>
+
+                        </b-table>
+                    </template>
+
+                </b-table>
+
+            </b-tab-item>
+            <b-tab-item label="Report">
+                Copy and Paste
+            </b-tab-item>
+        </b-tabs>
     </div>
 
     <script src="./results.js"></script>
