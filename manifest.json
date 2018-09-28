@@ -1,6 +1,6 @@
 {
   "name": "MM Tags",
-  "version": "1.3",
+  "version": "1.4",
   "description": "This extension lets load a list of urls and analyze their tags.",
   "permissions": ["*://*.serving-sys.com/*", "tabs", "webRequest", "webRequestBlocking", "debugger"],
   "background": {
