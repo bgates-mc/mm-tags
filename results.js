@@ -29,7 +29,7 @@ var app = new Vue({
       let orignal = url.url.trim().replace("*", "");
       let final = url.finalURL.trim().replace("*", "");
 
-      let urlRegex = /^(?:http(?:s)?:\/\/)?([a-zA-Z0-9-_\.]+)((?:\/[-a-zA-Z0-9%_\+.~=]+)+\/?)?(.*)?$/i;
+      let urlRegex = /^(?:http(?:s)?:\/\/)?([a-zA-Z0-9-_\.]+)((?:\/[-a-zA-Z0-9%_\+.~=]+)+)?\/?(.*)?$/i;
 
       originalResult = urlRegex.exec(orignal);
       finalResult = urlRegex.exec(final);
