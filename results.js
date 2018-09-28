@@ -5,9 +5,6 @@ var app = new Vue({
     URLs: []
   },
   methods: {
-    pass(url) {
-      //TODO: did this pass?
-    },
     retry(url) {
       this.URLs.splice(url.id, 1, {
         url: url.url,
@@ -16,9 +13,41 @@ var app = new Vue({
         responses: [],
         id: url.id,
         finalURL: "",
-        status: ""
+        status: "",
+        mappingRule: url.mappingRule
       });
       chrome.runtime.sendMessage({ type: "retry", url });
+    },
+    isMultipleTags(url) {
+      return url.responses.length > 1;
+    },
+    is404(url) {
+      return url.status === 404;
+    },
+    isRedirect(url) {
+      let orignal = url.url.trim().replace("*", "");
+      let final = url.finalURL.trim().replace("*", "");
+
+      let urlRegex = /^(?:http(?:s)?:\/\/)?([a-zA-Z0-9-_\.]+)((?:\/[-a-zA-Z0-9%_\+.~=]+)+\/?)?(.*)?$/i;
+
+      originalResult = urlRegex.exec(orignal);
+      finalResult = urlRegex.exec(final);
+
+      return {
+        domain: { original: originalResult[1], final: finalResult[1], result: originalResult[1] !== finalResult[1] },
+        path: { original: originalResult[2], final: finalResult[2], result: originalResult[2] !== finalResult[2] },
+        etc: { original: originalResult[3], final: finalResult[3], result: originalResult[3] !== finalResult[3] }
+      };
+    },
+    isMappingRuleActivated(url) {
+      let ruleMatch = false;
+      url.responses.forEach(response => {
+        if (response.ruleHits.indexOf(url.mappingRule) > -1) {
+          ruleMatch = true;
+        }
+      });
+
+      return ruleMatch;
     }
   }
 });
@@ -84,6 +113,14 @@ function jobComplete(message) {
 
 function responseReceived(message) {
   let responseFor = app.URLs[message.urlId];
+  if (!message.response) {
+    responseFor.responses.push({
+      body: "no response body",
+      tagId: "no response body",
+      ruleHits: "no response body",
+      queryString: message.queryString
+    });
+  }
   let ruleHits = decodeURIComponent(message.response.body)
     .split("\n")
     .find(line => line.indexOf("Rule hits:") > -1);

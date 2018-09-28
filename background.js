@@ -43,6 +43,11 @@ chrome.runtime.onMessage.addListener(message => {
     .split("\n")
     .filter(line => line)
     .map((item, index, array) => {
+      if (item.indexOf("\t") > -1) {
+        let [url, mappingRule] = item.split("\t");
+        return { url, id: index, mappingRule };
+      }
+
       if (index % 2 === 0) {
         return { url: item, id: index / 2, mappingRule: array[index + 1] };
       }
