@@ -15,9 +15,26 @@ var app = new Vue({
         id: url.id,
         finalURL: "",
         status: "",
-        mappingRule: url.mappingRule
+        mappingRule: url.mappingRule,
+        redirectOverride: -1
       });
       chrome.runtime.sendMessage({ type: "retry", url });
+    },
+    retryFails() {
+      this.URLs.forEach(item => {
+        if (item.finished && !this.isMappingRuleActivated(item)) {
+          this.retry(item);
+        }
+      });
+    },
+    isPass(url) {
+      let redirect = this.isRedirect(url);
+      return (
+        this.isMappingRuleActivated(url) &&
+        !this.is404(url) &&
+        !this.isMultipleTags(url) &&
+        !(url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride)
+      );
     },
     isMultipleTags(url) {
       return url.responses.length > 1;
@@ -35,6 +52,8 @@ var app = new Vue({
       finalResult = urlRegex.exec(final);
 
       return {
+        fullResult:
+          originalResult[1] !== finalResult[1] || originalResult[2] !== finalResult[2] || originalResult[3] !== finalResult[3],
         domain: { original: originalResult[1], final: finalResult[1], result: originalResult[1] !== finalResult[1] },
         path: { original: originalResult[2], final: finalResult[2], result: originalResult[2] !== finalResult[2] },
         etc: { original: originalResult[3], final: finalResult[3], result: originalResult[3] !== finalResult[3] }
@@ -92,7 +111,7 @@ function newJobStarted(message) {
   app.processing = "Processing";
   app.URLs = message.value.map(item => {
     let { url, id, mappingRule } = item;
-    return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "", mappingRule };
+    return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "", mappingRule, redirectOverride: -1 };
   });
 }
 

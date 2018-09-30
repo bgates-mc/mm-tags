@@ -20,13 +20,13 @@
 
     <div id="app">
         <div class="subtitle">Progress: {{completedCount()}} of {{URLs.length}} Completed</div>
-        <progress class="progress is-primary" :value="completedCount()" :max="URLs.length">{{(completedCount() / URLs.length).toFixed(2)}}%</progress>
+        <progress class="progress is-info" :value="completedCount()" :max="URLs.length">{{(completedCount() / URLs.length).toFixed(2)}}%</progress>
         <b-tabs type="is-boxed" class="block">
             <b-tab-item label="Details">
                 <b-table :data="URLs" :striped="true" :narrowed="true" :hoverable="true" :mobile-cards="true" detailed detail-key="id">
                     <template slot-scope="props">
                         <b-table-column field="url" label="URL">
-                            <button class="button is-primary" :disabled="!props.row.finished" @click="retry(props.row)">
+                            <button class="button is-link is-outlined is-small" :disabled="!props.row.finished" @click="retry(props.row)">
                                 <b-icon icon="refresh" />
                             </button>
                             {{ props.row.url }}
@@ -34,6 +34,11 @@
                         <b-table-column field="status" label="Status">
                             <b-tag :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
                                 {{ props.row.started ? (props.row.finished ? 'Complete' : 'Processing') : 'In Queue' }}
+                            </b-tag>
+                        </b-table-column>
+                        <b-table-column field="result" label="Result">
+                            <b-tag v-if="props.row.finished" :type="isPass(props.row) ? 'is-success' : 'is-danger'">
+                                {{ isPass(props.row) ? 'Pass' : 'Fail' }}
                             </b-tag>
                         </b-table-column>
                     </template>
@@ -56,6 +61,15 @@
                             <b-tag :type="isRedirect(props.row).etc.result ? 'is-warning' : 'is-success'">
                                 Params {{isRedirect(props.row).etc.result ? 'Do Not Match' : 'Match'}}
                             </b-tag>
+                            Manual override:
+                            <button @click="props.row.redirectOverride = 1" :class="{'button': true, 'is-link': true, 'is-small': true, 'is-outlined': props.row.redirectOverride !== 1, 'is-rounded': true}">
+                                <b-icon icon="call-split"></b-icon>
+                                <span>Is a redirect</span>
+                            </button>
+                            <button @click="props.row.redirectOverride = 0" :class="{'button': true, 'is-link': true, 'is-small': true, 'is-outlined': props.row.redirectOverride !== 0, 'is-rounded': true}">
+                                <b-icon icon="arrow-up"></b-icon>
+                                <span>Is not a redirect</span>
+                            </button>
                         </div>
                         <div v-if="props.row.status">
                             HTTP Status: {{props.row.status}}
