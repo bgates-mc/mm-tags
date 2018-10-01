@@ -10,3 +10,16 @@ td {
   max-width: 16.66vw;
   word-wrap: break-word;
 }
+
+div.tags {
+  display: inline-flex;
+  margin-bottom: 0px;
+}
+
+div.tags .tag {
+  margin-bottom: 0px;
+}
+
+.label {
+  display: inline-block;
+}

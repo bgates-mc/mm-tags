@@ -123,6 +123,18 @@ function tabClosed(message) {
   let finishedURL = app.URLs[message.urlId];
   finishedURL.finalURL = message.finalURL;
   finishedURL.finished = true;
+
+  let shouldRetry = false;
+
+  finishedURL.responses.forEach(response => {
+    if (response.ruleHits === "???" || response.ruleHits === "no response body") {
+      shouldRetry = true;
+    }
+  });
+
+  if (shouldRetry) {
+    app.retry(finishedURL);
+  }
 }
 
 function pageStatus(message) {
@@ -138,7 +150,6 @@ function responseReceived(message) {
   let responseFor = app.URLs[message.urlId];
   if (!message.response) {
     responseFor.responses.push({
-      body: "no response body",
       tagId: "no response body",
       ruleHits: "no response body",
       queryString: message.queryString
@@ -155,7 +166,6 @@ function responseReceived(message) {
   let MappingRules = RuleHitRegex.exec(ruleHits);
 
   responseFor.responses.push({
-    body: message.response.body,
     tagId: VersaTagId ? VersaTagId[1] : "???",
     ruleHits: MappingRules ? MappingRules[1] : "???",
     queryString: message.queryString

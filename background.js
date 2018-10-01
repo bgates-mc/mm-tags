@@ -155,7 +155,7 @@ function attachDebugger(url, tabId, urlId) {
 
 chrome.webRequest.onBeforeRequest.addListener(
   details => {
-    if (details.url.indexOf("mmdebug") === -1) {
+    if (details.url.indexOf("mmdebug") === -1 && details.url.indexOf("cn=ot") > -1) {
       return { redirectUrl: `${details.url}&mmdebug=1` };
     }
   },

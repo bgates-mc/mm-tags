@@ -29,15 +29,15 @@
                             <button class="button is-link is-outlined is-small" :disabled="!props.row.finished" @click="retry(props.row)">
                                 <b-icon icon="refresh" />
                             </button>
-                            {{ props.row.url }}
+                            <a>{{ props.row.url }}</a>
                         </b-table-column>
                         <b-table-column field="status" label="Status">
-                            <b-tag :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
+                            <b-tag rounded :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
                                 {{ props.row.started ? (props.row.finished ? 'Complete' : 'Processing') : 'In Queue' }}
                             </b-tag>
                         </b-table-column>
                         <b-table-column field="result" label="Result">
-                            <b-tag v-if="props.row.finished" :type="isPass(props.row) ? 'is-success' : 'is-danger'">
+                            <b-tag rounded v-if="props.row.finished" :type="isPass(props.row) ? 'is-success' : 'is-danger'">
                                 {{ isPass(props.row) ? 'Pass' : 'Fail' }}
                             </b-tag>
                         </b-table-column>
@@ -45,23 +45,32 @@
 
                     <template slot="detail" slot-scope="props">
                         <div>
-                            Expected Mapping Rule: {{props.row.mappingRule}}
-                            <b-tag v-if="props.row.finished" :type="isMappingRuleActivated(props.row) ? 'is-success' : 'is-danger'">
+                            <span class="label">Expected Mapping Rule:</span> {{props.row.mappingRule}}
+                            <b-tag rounded v-if="props.row.finished" :type="isMappingRuleActivated(props.row) ? 'is-success' : 'is-danger'">
                                 {{isMappingRuleActivated(props.row) ? 'Activated' : 'Did not activate'}}
                             </b-tag>
                         </div>
                         <div v-if="props.row.finished">
-                            Final URL: {{props.row.finalURL}}
-                            <b-tag :type="isRedirect(props.row).domain.result ? 'is-danger' : 'is-success'">
-                                Domain {{isRedirect(props.row).domain.result ? 'Does Not Match' : 'Matches'}}
-                            </b-tag>
-                            <b-tag :type="isRedirect(props.row).path.result ? 'is-danger' : 'is-success'">
-                                Path {{isRedirect(props.row).path.result ? 'Does Not Match' : 'Matches'}}
-                            </b-tag>
-                            <b-tag :type="isRedirect(props.row).etc.result ? 'is-warning' : 'is-success'">
-                                Params {{isRedirect(props.row).etc.result ? 'Do Not Match' : 'Match'}}
-                            </b-tag>
-                            Manual override:
+                            <span class="label">Final URL:</span> <a>{{props.row.finalURL}}</a>
+                            <b-taglist attached>
+                                <b-tag rounded type="is-dark">Domain</b-tag>
+                                <b-tag rounded :type="isRedirect(props.row).domain.result ? 'is-danger' : 'is-success'">
+                                    {{isRedirect(props.row).domain.result ? 'No Match' : 'Match'}}
+                                </b-tag>
+                            </b-taglist>
+                            <b-taglist attached>
+                                <b-tag rounded type="is-dark">Path</b-tag>
+                                <b-tag rounded :type="isRedirect(props.row).path.result ? 'is-danger' : 'is-success'">
+                                    {{isRedirect(props.row).path.result ? 'No Match' : 'Match'}}
+                                </b-tag>
+                            </b-taglist>
+                            <b-taglist attached>
+                                <b-tag rounded type="is-dark">Params</b-tag>
+                                <b-tag rounded :type="isRedirect(props.row).etc.result ? 'is-warning' : 'is-success'">
+                                    {{isRedirect(props.row).etc.result ? 'No Match' : 'Match'}}
+                                </b-tag>
+                            </b-taglist>
+                            <span class="label">Manual override:</span>
                             <button @click="props.row.redirectOverride = 1" :class="{'button': true, 'is-link': true, 'is-small': true, 'is-outlined': props.row.redirectOverride !== 1, 'is-rounded': true}">
                                 <b-icon icon="call-split"></b-icon>
                                 <span>Is a redirect</span>
@@ -72,12 +81,12 @@
                             </button>
                         </div>
                         <div v-if="props.row.status">
-                            HTTP Status: {{props.row.status}}
-                            <b-tag v-if="is404(props.row)" type="is-danger">404 detected</b-tag>
+                            <span class="label">HTTP Status:</span> {{props.row.status}}
+                            <b-tag rounded v-if="is404(props.row)" type="is-danger">404 detected</b-tag>
                         </div>
                         <div>
-                            VersaTags:
-                            <b-tag v-if="isMultipleTags(props.row)" type="is-danger">Multiple Tags Fired</b-tag>
+                            <span class="label">VersaTags:</span>
+                            <b-tag rounded v-if="isMultipleTags(props.row)" type="is-danger">Multiple Tags Fired</b-tag>
                         </div>
                         <b-table :data="props.row.responses" :bordered="true" :striped="true" :narrowed="true" :hoverable="true">
                             <template slot-scope="responses">
@@ -99,7 +108,7 @@
                                             <b-icon type="is-danger" icon="emoticon-sad" size="is-large" />
                                         </p>
                                         <p>
-                                            <b-tag type="is-danger">No VersaTags Fired</b-tag>
+                                            <b-tag rounded type="is-danger">No VersaTags Fired</b-tag>
                                         </p>
                                     </div>
                                 </section>
