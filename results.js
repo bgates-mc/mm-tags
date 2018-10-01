@@ -3,7 +3,8 @@ var app = new Vue({
   data: {
     processing: "Loading...",
     URLs: [],
-    tab: 0
+    tab: 0,
+    versaTagId: 0
   },
   methods: {
     retry(url) {
@@ -33,8 +34,19 @@ var app = new Vue({
         this.isMappingRuleActivated(url) &&
         !this.is404(url) &&
         !this.isMultipleTags(url) &&
-        !(url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride)
+        !(url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride) &&
+        this.isVersaTagIdMatch(url)
       );
+    },
+    isVersaTagIdMatch(url) {
+      let matches = false;
+      url.responses.forEach(item => {
+        if (item.tagId == this.versaTagId) {
+          matches = true;
+        }
+      });
+
+      return matches;
     },
     isMultipleTags(url) {
       return url.responses.length > 1;
@@ -109,6 +121,7 @@ let processing = false;
 function newJobStarted(message) {
   processing = true;
   app.processing = "Processing";
+  app.versaTagId = message.versaTagId;
   app.URLs = message.value.map(item => {
     let { url, id, mappingRule } = item;
     return { url, started: false, finished: false, responses: [], id, finalURL: "", status: "", mappingRule, redirectOverride: -1 };
@@ -161,13 +174,16 @@ function responseReceived(message) {
 
   let VersaTagIdRegex = /OneTagId:(\d*?),/;
   let RuleHitRegex = /Rule hits:(.*?),\s/;
+  let ClientHitRegex = /Rule await client hit:(.*?),\s/;
 
   let VersaTagId = VersaTagIdRegex.exec(ruleHits);
   let MappingRules = RuleHitRegex.exec(ruleHits);
+  let ClientHit = ClientHitRegex.exec(ruleHits);
 
   responseFor.responses.push({
     tagId: VersaTagId ? VersaTagId[1] : "???",
     ruleHits: MappingRules ? MappingRules[1] : "???",
+    clientHit: ClientHit ? ClientHit[1] : "???",
     queryString: message.queryString
   });
 }

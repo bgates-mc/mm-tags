@@ -1,10 +1,16 @@
 let URLsTextarea = document.getElementById("URLsTextarea");
+let versaTagId = document.getElementById("versaTagId");
 let maxTabs = document.getElementById("maxTabs");
 let startButton = document.getElementById("startButton");
 let stopButton = document.getElementById("stopButton");
 
 startButton.addEventListener("click", event => {
-  chrome.runtime.sendMessage({ type: "startTesting", value: URLsTextarea.value, maxTabs: Number(maxTabs.value) });
+  chrome.runtime.sendMessage({
+    type: "startTesting",
+    value: URLsTextarea.value,
+    maxTabs: Number(maxTabs.value),
+    versaTagId: Number(versaTagId.value)
+  });
 });
 
 stopButton.addEventListener("click", event => {

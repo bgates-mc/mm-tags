@@ -67,7 +67,7 @@ chrome.runtime.onMessage.addListener(message => {
   chrome.tabs.create({ url: chrome.runtime.getURL("results.html") }, tab => {
     chrome.tabs.onUpdated.addListener((updatedId, changes) => {
       if (changes.status === "complete" && updatedId === tab.id) {
-        chrome.runtime.sendMessage({ type: "newJobStarted", value: originalURLs });
+        chrome.runtime.sendMessage({ type: "newJobStarted", value: originalURLs, versaTagId: message.versaTagId });
         while (URLs.length && processingCount < maxTabs) {
           openTab();
         }

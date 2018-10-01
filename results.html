@@ -19,6 +19,7 @@
     <h1 class="title">Results Page</h1>
 
     <div id="app">
+        <div class="subtitle">Versa Tag ID: {{versaTagId}}</div>
         <div class="subtitle">Progress: {{completedCount()}} of {{URLs.length}} Completed</div>
         <progress class="progress is-info" :value="completedCount()" :max="URLs.length">{{(completedCount() / URLs.length).toFixed(2)}}%</progress>
         <b-tabs type="is-boxed" class="block">
@@ -29,7 +30,7 @@
                             <button class="button is-link is-outlined is-small" :disabled="!props.row.finished" @click="retry(props.row)">
                                 <b-icon icon="refresh" />
                             </button>
-                            <a>{{ props.row.url }}</a>
+                            <a :href="props.row.url">{{ props.row.url }}</a>
                         </b-table-column>
                         <b-table-column field="status" label="Status">
                             <b-tag rounded :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
@@ -51,7 +52,7 @@
                             </b-tag>
                         </div>
                         <div v-if="props.row.finished">
-                            <span class="label">Final URL:</span> <a>{{props.row.finalURL}}</a>
+                            <span class="label">Final URL:</span> <a :href="props.row.finalURL">{{props.row.finalURL}}</a>
                             <b-taglist attached>
                                 <b-tag rounded type="is-dark">Domain</b-tag>
                                 <b-tag rounded :type="isRedirect(props.row).domain.result ? 'is-danger' : 'is-success'">
@@ -92,6 +93,9 @@
                             <template slot-scope="responses">
                                 <b-table-column field="tagId" label="VersaTag ID">
                                     {{responses.row.tagId}}
+                                    <b-tag rounded :type="responses.row.tagId == versaTagId ? 'is-success' : 'is-danger'">
+                                        {{responses.row.tagId == versaTagId ? 'Match' : 'No Match'}}
+                                    </b-tag>
                                 </b-table-column>
                                 <b-table-column field="ruleHits" label="Mapping Rules">
                                     {{responses.row.ruleHits}}
