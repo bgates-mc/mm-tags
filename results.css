@@ -20,6 +20,7 @@ div.tags .tag {
   margin-bottom: 0px;
 }
 
-.label {
+.label,
+.inline {
   display: inline-block;
 }

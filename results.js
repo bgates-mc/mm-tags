@@ -4,7 +4,8 @@ var app = new Vue({
     processing: "Loading...",
     URLs: [],
     tab: 0,
-    versaTagId: 0
+    versaTagId: 0,
+    perPage: 50
   },
   methods: {
     retry(url) {

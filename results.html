@@ -19,18 +19,21 @@
     <h1 class="title">Results Page</h1>
 
     <div id="app">
-        <div class="subtitle">Versa Tag ID: {{versaTagId}}</div>
+        <b-field label="Versa Tag ID:">
+            <b-input size="is-small" class="inline" v-model="versaTagId"></b-input>
+        </b-field>
         <div class="subtitle">Progress: {{completedCount()}} of {{URLs.length}} Completed</div>
         <progress class="progress is-info" :value="completedCount()" :max="URLs.length">{{(completedCount() / URLs.length).toFixed(2)}}%</progress>
         <b-tabs type="is-boxed" class="block">
             <b-tab-item label="Details">
-                <b-table :data="URLs" :striped="true" :narrowed="true" :hoverable="true" :mobile-cards="true" detailed detail-key="id">
+                <b-table :paginated="false" :per-page="perPage" :data="URLs" :striped="true" :narrowed="true" :hoverable="true" :mobile-cards="true"
+                    detailed detail-key="id">
                     <template slot-scope="props">
                         <b-table-column field="url" label="URL">
                             <button class="button is-link is-outlined is-small" :disabled="!props.row.finished" @click="retry(props.row)">
                                 <b-icon icon="refresh" />
                             </button>
-                            <a :href="props.row.url">{{ props.row.url }}</a>
+                            <a :href="props.row.url" target="_blank">{{ props.row.url }}</a>
                         </b-table-column>
                         <b-table-column field="status" label="Status">
                             <b-tag rounded :type="props.row.started ? (props.row.finished ? 'is-success' : 'is-warning') : 'is-danger'">
@@ -44,6 +47,18 @@
                         </b-table-column>
                     </template>
 
+                    <template slot="bottom-left">
+                        <b-select v-model="perPage">
+                            <option value="5">5 per page</option>
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                            <option value="500">500 per page</option>
+                        </b-select>
+                    </template>
+
                     <template slot="detail" slot-scope="props">
                         <div>
                             <span class="label">Expected Mapping Rule:</span> {{props.row.mappingRule}}
@@ -52,7 +67,7 @@
                             </b-tag>
                         </div>
                         <div v-if="props.row.finished">
-                            <span class="label">Final URL:</span> <a :href="props.row.finalURL">{{props.row.finalURL}}</a>
+                            <span class="label">Final URL:</span> <a :href="props.row.finalURL" target="_blank">{{props.row.finalURL}}</a>
                             <b-taglist attached>
                                 <b-tag rounded type="is-dark">Domain</b-tag>
                                 <b-tag rounded :type="isRedirect(props.row).domain.result ? 'is-danger' : 'is-success'">
