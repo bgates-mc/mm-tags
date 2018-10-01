@@ -3,25 +3,31 @@ let processingCount = 0;
 let maxTabs = 5;
 let debugListeners = {};
 let completeListeners = {};
+let tabList = [];
 
 function processing() {
   return processingCount > 0 || URLs.length > 0;
 }
 
+function reset() {
+  Object.keys(debugListeners).forEach(key => {
+    chrome.debugger.onEvent.removeListener(debugListeners[key]);
+  });
+  debugListeners = {};
+  Object.keys(completeListeners).forEach(key => {
+    chrome.tabs.onUpdated.removeListener(completeListeners[key]);
+  });
+  completeListeners = {};
+
+  URLs = [];
+  processingCount = 0;
+  tabList = [];
+}
+
 //Start Button handler - fires when start button is clicked.
 chrome.runtime.onMessage.addListener(message => {
   if (message.type === "stopTesting") {
-    Object.keys(debugListeners).forEach(key => {
-      chrome.debugger.onEvent.removeListener(debugListeners[key]);
-    });
-    debugListeners = {};
-    Object.keys(completeListeners).forEach(key => {
-      chrome.tabs.onUpdated.removeListener(completeListeners[key]);
-    });
-    completeListeners = {};
-
-    URLs = [];
-    processingCount = 0;
+    reset();
     return;
   } else if (message.type === "retry") {
     URLs.push(message.url);
@@ -32,6 +38,8 @@ chrome.runtime.onMessage.addListener(message => {
   if (message.type !== "startTesting") {
     return;
   }
+
+  reset();
 
   if (message.maxTabs) {
     maxTabs = message.maxTabs;
@@ -73,6 +81,7 @@ function openTab() {
   let { url, id } = item;
   processingCount++;
   chrome.tabs.create({ url: formatURL(url), active: false }, tab => {
+    tabList.push({ tab, id: tab.id, loaded: false, pendingRequest: 0, finalURL: "", vtFired: false });
     chrome.runtime.sendMessage({ type: "tabOpened", id });
     listenForComplete(url, tab.id, id);
     attachDebugger(url, tab.id, id);
@@ -91,24 +100,23 @@ function formatURL(url) {
 function listenForComplete(url, tabId, urlId) {
   completeListeners[`${tabId}CompleteListener`] = (updatedId, changes, tab) => {
     if (changes.status === "complete" && updatedId === tabId) {
-      setTimeout(() => {
-        chrome.runtime.sendMessage({ type: "tabClosed", url, urlId, finalURL: tab.url });
-        chrome.tabs.onUpdated.removeListener(completeListeners[`${tabId}CompleteListener`]);
+      let listTab = tabList.find(item => item.id === tabId);
 
-        chrome.tabs.remove(tabId, () => {
-          processingCount--;
-
-          if (processingCount <= maxTabs && URLs.length) {
-            openTab();
-          } else if (URLs.length === 0 && processingCount === 0) {
-            chrome.runtime.sendMessage({ type: "jobComplete" });
-            Object.keys(debugListeners).forEach(key => {
-              chrome.debugger.onEvent.removeListener(debugListeners[key]);
-            });
-            debugListeners = {};
+      if (!listTab.vtFired) {
+        setTimeout(() => {
+          listTab.finalURL = tab.url;
+          listTab.loaded = true;
+          if (!listTab.pendingRequest) {
+            closeTab(url, tabId, urlId);
           }
-        });
-      }, 2500);
+        }, 2500);
+      } else {
+        listTab.finalURL = tab.url;
+        listTab.loaded = true;
+        if (!listTab.pendingRequest) {
+          closeTab(url, tabId, urlId);
+        }
+      }
     }
   };
   chrome.tabs.onUpdated.addListener(completeListeners[`${tabId}CompleteListener`]);
@@ -116,6 +124,7 @@ function listenForComplete(url, tabId, urlId) {
 
 function attachDebugger(url, tabId, urlId) {
   let firstRequest = true;
+  let listTab = tabList.find(item => item.id === tabId);
 
   chrome.debugger.attach({ tabId }, "1.3", () => {
     chrome.debugger.sendCommand({ tabId }, "Network.enable");
@@ -125,8 +134,15 @@ function attachDebugger(url, tabId, urlId) {
         return;
       }
 
+      if (params.request && params.request.url && params.request.url.indexOf("ebOneTag.js") > -1) {
+        listTab.pendingRequest++;
+        listTab.vtFired;
+      }
+
       if (
         message === "Network.responseReceived" &&
+        params.response &&
+        params.response.url &&
         params.response.url.indexOf("mmdebug=1") > -1 &&
         params.response.url.indexOf("cn=ot") > -1
       ) {
@@ -138,6 +154,11 @@ function attachDebugger(url, tabId, urlId) {
             urlId,
             queryString: params.response.url.split("?")[1]
           });
+          listTab.pendingRequest--;
+
+          if (!listTab.pendingRequest && listTab.loaded) {
+            closeTab(url, tabId, urlId);
+          }
         });
       }
 
@@ -148,6 +169,25 @@ function attachDebugger(url, tabId, urlId) {
     };
 
     chrome.debugger.onEvent.addListener(debugListeners[`${tabId}DebugListener`]);
+  });
+}
+
+function closeTab(url, tabId, urlId) {
+  let listTab = tabList.find(item => item.id === tabId);
+  chrome.runtime.sendMessage({ type: "tabClosed", url, urlId, finalURL: listTab.finalURL });
+
+  chrome.tabs.onUpdated.removeListener(completeListeners[`${tabId}CompleteListener`]);
+  chrome.debugger.onEvent.removeListener(debugListeners[`${tabId}DebugListener`]);
+
+  chrome.tabs.remove(tabId, () => {
+    processingCount--;
+
+    if (processingCount <= maxTabs && URLs.length) {
+      openTab();
+    } else if (URLs.length === 0 && processingCount === 0) {
+      chrome.runtime.sendMessage({ type: "jobComplete" });
+      debugListeners = {};
+    }
   });
 }
 
