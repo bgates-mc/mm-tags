@@ -33,25 +33,33 @@ var app = new Vue({
       let text = "";
       let redirect = this.isRedirect(url);
 
-      if (url.responses && !url.responses.length) {
+      let noVT = url.responses && !url.responses.length;
+      let noMappingRule = !this.isMappingRuleActivated(url);
+      let error404 = this.is404(url);
+      let multipleTags = this.isMultipleTags(url) && url.responses;
+      let redirected = url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride;
+      let wrongVT = !this.isVersaTagIdMatch(url) && url.responses;
+
+
+      if (noVT) {
         text += `No VersaTag fired.`;
       }
 
-      if (!this.isMappingRuleActivated(url)) {
+      if (!noVT && !wrongVT && noMappingRule) {
         text += `Mapping does not activate. `;
       }
-      if (this.is404(url)) {
+      if (error404) {
         text += `404 Error on this URL. `;
       }
-      if (this.isMultipleTags(url) && url.responses) {
+      if (!noVT && multipleTags) {
           text += `Multiple VersaTags fired on this page. The following VersaTag${url.responses.length > 0 ? 's' : ''} fired: ${url.responses
             .map(response => response.tagId)
             .join(", ")}. `;
       }
-      if (url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride) {
+      if (redirected) {
         text += `URL redirects to: ${url.finalURL}`;
       }
-      if (!this.isVersaTagIdMatch(url) && url.responses) {
+      if (!noVT && !multipleTags && wrongVT) {
         text += `Wrong VersaTag fired. The following VersaTag${url.responses.length > 0 ? "s" : ""} fired: ${url.responses
           .map(response => response.tagId)
           .join(", ")}. `;

@@ -42,7 +42,7 @@
                         </b-table-column>
                         <b-table-column field="result" label="Result">
                             <b-tag rounded v-if="props.row.finished" :type="isPass(props.row) ? 'is-success' : 'is-danger'">
-                                {{ isPass(props.row) ? 'Pass' : 'Fail' }}
+                                {{ isPass(props.row) ? 'Pass' : 'Fail ' + getIssuesText(props.row) }}
                             </b-tag>
                         </b-table-column>
                     </template>
