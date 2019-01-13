@@ -108,6 +108,10 @@ function listenForComplete(url, tabId, urlId) {
           listTab.loaded = true;
           if (!listTab.pendingRequest) {
             closeTab(url, tabId, urlId);
+          } else {
+            setTimeout(() => {
+              closeTab(url, tabId, urlId);
+            }, 2500);
           }
         }, 2500);
       } else {

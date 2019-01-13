@@ -29,6 +29,36 @@ var app = new Vue({
         }
       });
     },
+    getIssuesText(url) {
+      let text = "";
+      let redirect = this.isRedirect(url);
+
+      if (url.responses && !url.responses.length) {
+        text += `No VersaTag fired.`;
+      }
+
+      if (!this.isMappingRuleActivated(url)) {
+        text += `Mapping does not activate. `;
+      }
+      if (this.is404(url)) {
+        text += `404 Error on this URL. `;
+      }
+      if (this.isMultipleTags(url) && url.responses) {
+          text += `Multiple VersaTags fired on this page. The following VersaTag${url.responses.length > 0 ? 's' : ''} fired: ${url.responses
+            .map(response => response.tagId)
+            .join(", ")}. `;
+      }
+      if (url.redirectOverride === -1 ? redirect.fullResult : url.redirectOverride) {
+        text += `URL redirects to: ${url.finalURL}`;
+      }
+      if (!this.isVersaTagIdMatch(url) && url.responses) {
+        text += `Wrong VersaTag fired. The following VersaTag${url.responses.length > 0 ? "s" : ""} fired: ${url.responses
+          .map(response => response.tagId)
+          .join(", ")}. `;
+      }
+
+      return text;
+    },
     isPass(url) {
       let redirect = this.isRedirect(url);
       return (

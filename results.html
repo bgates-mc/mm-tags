@@ -113,7 +113,7 @@
                                     </b-tag>
                                 </b-table-column>
                                 <b-table-column field="ruleHits" label="Mapping Rules">
-                                    {{responses.row.ruleHits}}
+                                    {{ responses.row.ruleHits.replace(/,/g, ', ') }}
                                 </b-table-column>
                                 <b-table-column field="queryString" label="Query String">
                                     {{responses.row.queryString}}
@@ -140,7 +140,30 @@
 
             </b-tab-item>
             <b-tab-item label="Report">
-                Copy and Paste
+                <!--Result/Issues/Mapping Rules/Query String-->
+
+                <b-table :paginated="false" :data="URLs" :striped="true" :narrowed="true" :hoverable="true" :mobile-cards="true">
+                    <template slot-scope="props">
+                        <b-table-column field="result" label="URL">
+                            {{ props.row.url }}
+                        </b-table-column>
+                        <b-table-column field="result" label="Mapping Rule">
+                            {{ props.row.mappingRule }}
+                        </b-table-column>
+                        <b-table-column field="result" label="Result">
+                            {{ props.row.finished ? (isPass(props.row) ? 'Pass' : 'Fail') : '...' }}
+                        </b-table-column>
+                        <b-table-column field="issues" label="Issues">
+                            {{ props.row.finished && isPass(props.row) ? 'None' : props.row.finished ? getIssuesText(props.row) : '...' }}
+                        </b-table-column>
+                        <b-table-column field="mappingRules" label="Mapping Rules">
+                            {{ props.row.responses && props.row.responses[0] ? props.row.responses[0].ruleHits.replace(/,/g, ', ') : '...' }}
+                        </b-table-column>
+                        <b-table-column field="queryString" label="Query String">
+                            {{ props.row.responses && props.row.responses[0] ? props.row.responses[0].queryString : '...' }}
+                        </b-table-column>
+                    </template>
+                </b-table>
             </b-tab-item>
         </b-tabs>
     </div>
