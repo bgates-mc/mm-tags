@@ -46,7 +46,7 @@ var app = new Vue({
       }
 
       if (!noVT && !wrongVT && noMappingRule) {
-        text += `Mapping does not activate. `;
+        text += `Mapping Rule does not activate. `;
       }
       if (error404) {
         text += `404 Error on this URL. `;
